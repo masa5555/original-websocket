@@ -11,5 +11,25 @@
 
   <h1>Home</h1>
 </body>
+<script>
+  // websoket通信のスクリプト
+  var ws = new WebSocket('ws://localhost:5555/chat');
+  ws.onopen = function () {
+    console.log('ws connected');
+    ws.send('Hello Server!');
+  };
+  ws.onmessage = function (event) {
+    console.log('ws on message: ' + event.data);
+  };
+
+  ws.onerror = function (error) {
+    console.error('ws error: ', error);
+  };
+
+  ws.onclose = function (event) {
+    console.log('ws closed コード: ' + event.code + ' 理由: ' + event.reason);
+  };
+
+</script>
 
 </html>
