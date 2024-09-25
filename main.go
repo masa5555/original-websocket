@@ -93,6 +93,29 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 			+---------------------------------------------------------------+
 	*/
 
+	// サーバーからはマスクしない。
+	var sendFirstByte byte = 0b1000_0001
+	for i := 0; i < len(dummyDB); i++ {
+		fmt.Println("get 0: ", dummyDB[i])
+		var dummyDBrow = []byte(dummyDB[i])
+		var payloadLength = len(dummyDBrow)
+		fmt.Printf("data: %s length: %d\n", dummyDB[i], payloadLength)
+		var secondByte = byte(0b0000_0000 ^ payloadLength)
+		fmt.Printf("2nd byte: %#08b\n", secondByte)
+		var sendBytes = append([]byte{sendFirstByte, secondByte}, dummyDBrow...)
+		for _, by := range sendBytes {
+			fmt.Printf("%#08b ", by)
+		}
+		fmt.Print("\n")
+		code, err := conn.Write(sendBytes)
+		if err != nil {
+			fmt.Println("Write error")
+			fmt.Println(err)
+			return
+		}
+		fmt.Printf("send code: %d\n", code)
+	}
+
 	var firstByte = make([]byte, 1)
 	_, err = conn.Read(firstByte)
 	if err != nil {
@@ -134,8 +157,8 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Printf("Masking-key: %#08b %#08b %#08b %#08b\n", maskKey[0], maskKey[1], maskKey[2], maskKey[3])
 
-	// Payload data
-	fmt.Printf("Payload data: ")
+	// Payload data　{PayloadLength} bytes
+	fmt.Printf("unmask data: ")
 	var payloadBytes = make([]byte, payloadLength)
 	for i := 0; i < int(payloadLength); i++ {
 		data := make([]byte, 1)
@@ -145,8 +168,10 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(err)
 		}
 		payloadBytes[i] = data[0] ^ maskKey[i%4]
+		fmt.Printf("%#08b ", payloadBytes[i])
 	}
-	fmt.Printf("%s\n", payloadBytes)
+	fmt.Printf("\n")
+	fmt.Printf("Raw data: %s\n", payloadBytes)
 	dummyDB = append(dummyDB, string(payloadBytes))
-	fmt.Printf("dummyDB: %v\n", dummyDB)
+	fmt.Printf("dummyDB: %v\n\n", dummyDB)
 }

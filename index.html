@@ -11,6 +11,7 @@
 
   <h1>WebSocket Chat</h1>
   <textarea id="input"></textarea>
+  <ul id="message-list"></ul>
   <button onclick="sendws()">
     送信
   </button>
@@ -19,16 +20,20 @@
   var ws = new WebSocket('ws://localhost:5555/chat');
   ws.onopen = function () {
     console.log('ws connected');
-    ws.send('Hello Server!');
   };
   ws.onmessage = function (event) {
     console.log('ws on message: ' + event.data);
+    const messageList = document.getElementById('message-list');
+    const li = document.createElement('li');
+    li.textContent = event.data;
+    messageList.appendChild(li);
   };
 
   const sendws = () => {
     const input = document.getElementById('input').value;
     console.log('ws send:', input);
     ws.send(input);
+    document.getElementById('input').value = '';
   }
 
   ws.onerror = function (error) {
