@@ -2,17 +2,20 @@
 <html lang="ja">
 
 <head>
-  <title>Home</title>
+  <title>WebSocket Chat</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
 
-  <h1>Home</h1>
+  <h1>WebSocket Chat</h1>
+  <textarea id="input"></textarea>
+  <button onclick="sendws()">
+    送信
+  </button>
 </body>
 <script>
-  // websoket通信のスクリプト
   var ws = new WebSocket('ws://localhost:5555/chat');
   ws.onopen = function () {
     console.log('ws connected');
@@ -21,6 +24,12 @@
   ws.onmessage = function (event) {
     console.log('ws on message: ' + event.data);
   };
+
+  const sendws = () => {
+    const input = document.getElementById('input').value;
+    console.log('ws send:', input);
+    ws.send(input);
+  }
 
   ws.onerror = function (error) {
     console.error('ws error: ', error);
